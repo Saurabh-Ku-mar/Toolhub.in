@@ -573,21 +573,29 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-    apiKey: "AIzaSyAnwx0ClsYZN7U67Gv4iQFCwWF1LILRbXY",
-    authDomain: "upsc-hindi-e3323.firebaseapp.com",
-    projectId: "upsc-hindi-e3323",
-    storageBucket: "upsc-hindi-e3323.firebasestorage.app",
-    messagingSenderId: "1095237517465",
-    appId: "1:1095237517465:web:b4be0dd192974ab453f808",
-    measurementId: "G-NVS3V06W9K"
-  };
+  apiKey: "AIzaSyAdW4-HLCLlfpPXMSd3f6ITJGV6OFY9vwM",
+  authDomain: "toolhub-51a3a.firebaseapp.com",
+  projectId: "toolhub-51a3a",
+  storageBucket: "toolhub-51a3a.firebasestorage.app",
+  messagingSenderId: "767858516605",
+  appId: "1:767858516605:web:0b2310efa77302f0c78714",
+  measurementId: "G-0BDYBTJYVL"
+};
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
-        // OpenAI Configuration
-        const OPENAI_API_KEY = 'your-openai-api-key-here';
+        // GEMINIAI Configuration
+        async function askGemini(promptText) {
+  const res = await fetch("http://localhost:5001/api/gemini", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: promptText })
+  });
+  const data = await res.json();
+  return data.result || data.error || "No response.";
+}
 
         // Language Data
         const languages = {
