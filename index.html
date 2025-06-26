@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolHub.in - 50+ Professional Tools for Everyone</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        .dark {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .dark .bg-white {
+            background-color: #2d3748;
+        }
+        .dark .text-gray-900 {
+            color: #e2e8f0;
+        }
+        .dark .text-gray-600 {
+            color: #cbd5e0;
+        }
+        .dark .border-gray-300 {
+            border-color: #4a5568;
+        }
+        .adsense-placeholder {
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-weight: bold;
+            min-height: 100px;
+        }
+        .dark .adsense-placeholder {
+            background: linear-gradient(45deg, #2d3748, #4a5568);
+            border-color: #718096;
+            color: #cbd5e0;
+        }
+        .tool-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+        .nav-item:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .nav-item.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        .file-drop-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .file-drop-zone:hover {
+            border-color: #3b82f6;
+            background-color: #f7fafc;
+        }
+        .dark .file-drop-zone {
+            border-color: #4a5568;
+            background-color: #2d3748;
+        }
+        .dark .file-drop-zone:hover {
+            border-color: #3b82f6;
+            background-color: #374151;
+        }
+        .premium-badge {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            position: absolute;
+            top: -0.5rem;
+            right: -0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 transition-colors duration-300">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-blue-600">🛠️ ToolHub.in</h1>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:space-x-8">
+                        <div class="nav-item" onclick="showPage('home')">
+                            <span data-lang="home">Home</span>
+                        </div>
+                        <div class="nav-item" onclick="showPage('tools')">
+                            <span data-lang="tools">Tools</span>
+                        </div>
+                        <div class="nav-item" onclick="showPage('dashboard')">
+                            <span data-lang="dashboard">Dashboard</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Language Toggle -->
+                    <button onclick="toggleLanguage()" class="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200">
+                        <span id="langToggle">EN</span>
+                    </button>
+                    
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200">
+                        <i id="themeIcon" class="fas fa-moon"></i>
+                    </button>
+                    
+                    <!-- Auth Buttons -->
+                    <div id="authButtons">
+                        <button onclick="showPage('login')" class="px-4 py-2 text-sm font-medium text-blue-600 bg-white border border-blue-600 rounded-md hover:bg-blue-50">
+                            <span data-lang="login">Login</span>
+                        </button>
+                        <button onclick="showPage('register')" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                            <span data-lang="register">Sign Up</span>
+                        </button>
+                    </div>
+                    
+                    <div id="userInfo" style="display: none;">
+                        <span id="userEmail" class="text-sm text-gray-700"></span>
+                        <button onclick="logout()" class="ml-2 px-3 py-1 text-sm text-red-600 hover:text-red-800">
+                            <span data-lang="logout">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="homePage" class="page active">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <!-- Hero Section -->
+            <div class="text-center">
+                <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                    <span class="block xl:inline" data-lang="heroTitle">50+ Professional Tools</span>
+                    <span class="block text-blue-600 xl:inline" data-lang="heroSubtitle">Made for India</span>
+                </h1>
+                <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl" data-lang="heroDescription">
+                    Convert, edit, and process your documents and images with our powerful online tools. No software installation required.
+                </p>
+            </div>
+
+            <!-- AdSense Placeholder -->
+            <div class="adsense-placeholder my-8">
+                Google AdSense - Top Banner (728x90)
+            </div>
+
+            <!-- Search Bar -->
+            <div class="mt-10 max-w-md mx-auto">
+                <div class="relative">
+                    <input type="text" id="toolSearch" placeholder="Search tools..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" onkeyup="filterTools()">
+                    <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+            </div>
+
+            <!-- Tools Grid -->
+            <div class="mt-12">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6" data-lang="popularTools">Popular Tools</h2>
+                <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Tools will be dynamically generated -->
+                </div>
+            </div>
+
+            <!-- AdSense Placeholder -->
+            <div class="adsense-placeholder my-8">
+                Google AdSense - Middle Banner (728x90)
+            </div>
+
+            <!-- Features Section -->
+            <div class="mt-16">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900" data-lang="whyChoose">Why Choose ToolHub.in?</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500" data-lang="whyChooseDesc">
+                        Built specifically for Indian users with local language support and payment methods
+                    </p>
+                </div>
+
+                <div class="mt-10">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="text-center">
+                            <div class="text-4xl text-blue-600 mb-4">🚀</div>
+                            <h3 class="text-lg font-medium text-gray-900" data-lang="fastSecure">Fast & Secure</h3>
+                            <p class="mt-2 text-base text-gray-500" data-lang="fastSecureDesc">All processing happens locally in your browser for maximum security</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl text-green-600 mb-4">💳</div>
+                            <h3 class="text-lg font-medium text-gray-900" data-lang="indianPayments">Indian Payments</h3>
+                            <p class="mt-2 text-base text-gray-500" data-lang="indianPaymentsDesc">UPI, Razorpay, and other local payment methods supported</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-4xl text-purple-600 mb-4">🇮🇳</div>
+                            <h3 class="text-lg font-medium text-gray-900" data-lang="hindiSupport">Hindi Support</h3>
+                            <p class="mt-2 text-base text-gray-500" data-lang="hindiSupportDesc">Complete interface available in Hindi language</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tools Page -->
+    <div id="toolsPage" class="page">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8" data-lang="allTools">All Tools</h1>
+            
+            <!-- Tool Categories -->
+            <div class="mb-8">
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="filterByCategory('all')" class="category-btn active px-4 py-2 bg-blue-600 text-white rounded-md" data-lang="allCategories">All</button>
+                    <button onclick="filterByCategory('pdf')" class="category-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">PDF</button>
+                    <button onclick="filterByCategory('image')" class="category-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300" data-lang="image">Image</button>
+                    <button onclick="filterByCategory('document')" class="category-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300" data-lang="document">Document</button>
+                    <button onclick="filterByCategory('ai')" class="category-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">AI Tools</button>
+                </div>
+            </div>
+
+            <div id="allToolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- All tools will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual Tool Page -->
+    <div id="toolPage" class="page">
+        <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <button onclick="showPage('tools')" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span data-lang="backToTools">Back to Tools</span>
+                    </button>
+                    <div id="premiumBadge" class="premium-badge" style="display: none;">
+                        <i class="fas fa-crown mr-1"></i>Premium
+                    </div>
+                </div>
+
+                <div class="text-center mb-8">
+                    <div id="toolIcon" class="text-6xl mb-4">🔧</div>
+                    <h1 id="toolTitle" class="text-3xl font-bold text-gray-900 mb-2">Tool Name</h1>
+                    <p id="toolDescription" class="text-gray-600">Tool description will appear here</p>
+                </div>
+
+                <!-- AdSense Placeholder -->
+                <div class="adsense-placeholder mb-8">
+                    Google AdSense - Tool Page Banner (728x90)
+                </div>
+
+                <!-- File Upload Area -->
+                <div id="fileUploadSection" class="mb-8">
+                    <div class="file-drop-zone" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-lg font-medium text-gray-700 mb-2" data-lang="dragDrop">Drag and drop your file here</p>
+                        <p class="text-sm text-gray-500" data-lang="orClick">or click to browse</p>
+                        <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(event)">
+                    </div>
+                </div>
+
+                <!-- AI Tool Input Section -->
+                <div id="aiInputSection" class="mb-8" style="display: none;">
+                    <textarea id="aiPrompt" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows="4" placeholder="Enter your prompt or requirements here..."></textarea>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            <span data-lang="aiPowered">Powered by OpenAI GPT</span>
+                        </div>
+                        <button onclick="processAITool()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                            <i class="fas fa-magic mr-2"></i>
+                            <span data-lang="generate">Generate</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Processing Status -->
+                <div id="processingStatus" class="hidden mb-8">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-3"></div>
+                            <span class="text-blue-800" data-lang="processing">Processing your file...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div id="previewSection" class="hidden mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4" data-lang="preview">Preview</h3>
+                    <div id="previewContent" class="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                        <!-- Preview content will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Download Section -->
+                <div id="downloadSection" class="hidden">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-medium text-green-800" data-lang="ready">Your file is ready!</h3>
+                                <p class="text-sm text-green-600" data-lang="downloadBelow">Download your processed file below</p>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button id="downloadBtn" onclick="downloadFile()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                    <i class="fas fa-download mr-2"></i>
+                                    <span data-lang="download">Download</span>
+                                </button>
+                                <button id="premiumDownloadBtn" onclick="showPremiumModal()" class="px-6 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700" style="display: none;">
+                                    <i class="fas fa-crown mr-2"></i>
+                                    <span data-lang="downloadZip">Download ZIP (Premium)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="page">
+        <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-md w-full space-y-8">
+                <div>
+                    <div class="mx-auto h-12 w-12 text-center text-2xl">🛠️</div>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900" data-lang="signInAccount">
+                        Sign in to your account
+                    </h2>
+                </div>
+                <form id="loginForm" class="mt-8 space-y-6" onsubmit="handleLogin(event)">
+                    <div class="rounded-md shadow-sm -space-y-px">
+                        <div>
+                            <input id="loginEmail" name="email" type="email" required class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Email address">
+                        </div>
+                        <div>
+                            <input id="loginPassword" name="password" type="password" required class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Password">
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span data-lang="signIn">Sign in</span>
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600">
+                            <span data-lang="dontHaveAccount">Don't have an account?</span>
+                            <button type="button" onclick="showPage('register')" class="font-medium text-blue-600 hover:text-blue-500 ml-1" data-lang="signUpHere">
+                                Sign up here
+                            </button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="registerPage" class="page">
+        <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-md w-full space-y-8">
+                <div>
+                    <div class="mx-auto h-12 w-12 text-center text-2xl">🛠️</div>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900" data-lang="createAccount">
+                        Create your account
+                    </h2>
+                </div>
+                <form id="registerForm" class="mt-8 space-y-6" onsubmit="handleRegister(event)">
+                    <div class="rounded-md shadow-sm -space-y-px">
+                        <div>
+                            <input id="registerEmail" name="email" type="email" required class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Email address">
+                        </div>
+                        <div>
+                            <input id="registerPassword" name="password" type="password" required class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Password">
+                        </div>
+                        <div>
+                            <input id="confirmPassword" name="confirmPassword" type="password" required class="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" placeholder="Confirm Password">
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span data-lang="signUp">Sign up</span>
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600">
+                            <span data-lang="alreadyHaveAccount">Already have an account?</span>
+                            <button type="button" onclick="showPage('login')" class="font-medium text-blue-600 hover:text-blue-500 ml-1" data-lang="signInHere">
+                                Sign in here
+                            </button>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="page">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8">
+                <!-- Sidebar -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4" data-lang="quickActions">Quick Actions</h3>
+                        <div class="space-y-3">
+                            <button onclick="showPage('tools')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                                <i class="fas fa-tools mr-3"></i>
+                                <span data-lang="browseTools">Browse Tools</span>
+                            </button>
+                            <button onclick="showPremiumModal()" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                                <i class="fas fa-crown mr-3"></i>
+                                <span data-lang="upgradePremium">Upgrade to Premium</span>
+                            </button>
+                        </div>
+
+                        <!-- AdSense Placeholder -->
+                        <div class="adsense-placeholder mt-6" style="min-height: 250px;">
+                            Google AdSense<br>Sidebar (300x250)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-9">
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6" data-lang="dashboard">Dashboard</h2>
+                        
+                        <!-- Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-blue-50 rounded-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="text-3xl text-blue-600 mr-4">📊</div>
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-600" data-lang="toolsUsed">Tools Used</p>
+                                        <p class="text-2xl font-bold text-blue-900" id="toolsUsedCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="text-3xl text-green-600 mr-4">💾</div>
+                                    <div>
+                                        <p class="text-sm font-medium text-green-600" data-lang="filesProcessed">Files Processed</p>
+                                        <p class="text-2xl font-bold text-green-900" id="filesProcessedCount">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="text-3xl text-purple-600 mr-4">👑</div>
+                                    <div>
+                                        <p class="text-sm font-medium text-purple-600" data-lang="membershipStatus">Membership</p>
+                                        <p class="text-lg font-bold text-purple-900" id="membershipStatus" data-lang="free">Free</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-4" data-lang="recentActivity">Recent Activity</h3>
+                            <div id="recentActivity" class="space-y-3">
+                                <div class="flex items-center py-3 px-4 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-info-circle text-gray-400 mr-3"></i>
+                                    <span class="text-gray-600" data-lang="noRecentActivity">No recent activity. Start using tools to see your history here.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Modal -->
+    <div id="premiumModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                    <i class="fas fa-crown text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2" data-lang="upgradePremium">Upgrade to Premium</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500" data-lang="premiumFeatures">
+                        Unlock premium features including ZIP downloads, AI tools, and priority processing.
+                    </p>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold text-gray-900">₹99 <span class="text-lg font-normal text-gray-500">/month</span></div>
+                    </div>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="initiatePremiumPayment()" class="px-4 py-2 bg-yellow-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300">
+                        <span data-lang="payWithRazorpay">Pay with Razorpay/UPI</span>
+                    </button>
+                    <button onclick="closePremiumModal()" class="mt-3 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        <span data-lang="cancel">Cancel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">🛠️ ToolHub.in</h3>
+                    <p class="text-gray-300 text-sm" data-lang="footerDesc">
+                        Professional online tools for document and image processing. Built for Indian users.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4" data-lang="quickLinks">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="home">Home</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="tools">Tools</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="pricing">Pricing</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="support">Support</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4" data-lang="legal">Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="privacy">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="terms">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white" data-lang="refund">Refund Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4" data-lang="paymentMethods">Payment Methods</h4>
+                    <div class="flex space-x-2">
+                        <div class="bg-white text-black px-2 py-1 rounded text-xs font-bold">UPI</div>
+                        <div class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold">Razorpay</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center">
+                <p class="text-gray-400 text-sm">
+                    © 2025 ToolHub.in · Built for India · <span data-lang="allRightsReserved">All rights reserved</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+    apiKey: "AIzaSyAnwx0ClsYZN7U67Gv4iQFCwWF1LILRbXY",
+    authDomain: "upsc-hindi-e3323.firebaseapp.com",
+    projectId: "upsc-hindi-e3323",
+    storageBucket: "upsc-hindi-e3323.firebasestorage.app",
+    messagingSenderId: "1095237517465",
+    appId: "1:1095237517465:web:b4be0dd192974ab453f808",
+    measurementId: "G-NVS3V06W9K"
+  };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // OpenAI Configuration
+        const OPENAI_API_KEY = 'your-openai-api-key-here';
+
+        // Language Data
+        const languages = {
+            en: {
+                home: "Home",
+                tools: "Tools",
+                dashboard: "Dashboard",
+                login: "Login",
+                register: "Sign Up",
+                logout: "Logout",
+                heroTitle: "50+ Professional Tools",
+                heroSubtitle: "Made for India",
+                heroDescription: "Convert, edit, and process your documents and images with our powerful online tools. No software installation required.",
+                popularTools: "Popular Tools",
+                whyChoose: "Why Choose ToolHub.in?",
+                whyChooseDesc: "Built specifically for Indian users with local language support and payment methods",
+                fastSecure: "Fast & Secure",
+                fastSecureDesc: "All processing happens locally in your browser for maximum security",
+                indianPayments: "Indian Payments",
+                indianPaymentsDesc: "UPI, Razorpay, and other local payment methods supported",
+                hindiSupport: "Hindi Support",
+                hindiSupportDesc: "Complete interface available in Hindi language",
+                allTools: "All Tools",
+                allCategories: "All",
+                image: "Image",
+                document: "Document",
+                backToTools: "Back to Tools",
+                dragDrop: "Drag and drop your file here",
+                orClick: "or click to browse",
+                aiPowered: "Powered by OpenAI GPT",
+                generate: "Generate",
+                processing: "Processing your file...",
+                preview: "Preview",
+                ready: "Your file is ready!",
+                downloadBelow: "Download your processed file below",
+                download: "Download",
+                downloadZip: "Download ZIP (Premium)",
+                signInAccount: "Sign in to your account",
+                signIn: "Sign in",
+                dontHaveAccount: "Don't have an account?",
+                signUpHere: "Sign up here",
+                createAccount: "Create your account",
+                signUp: "Sign up",
+                alreadyHaveAccount: "Already have an account?",
+                signInHere: "Sign in here",
+                quickActions: "Quick Actions",
+                browseTools: "Browse Tools",
+                upgradePremium: "Upgrade to Premium",
+                toolsUsed: "Tools Used",
+                filesProcessed: "Files Processed",
+                membershipStatus: "Membership",
+                free: "Free",
+                recentActivity: "Recent Activity",
+                noRecentActivity: "No recent activity. Start using tools to see your history here.",
+                premiumFeatures: "Unlock premium features including ZIP downloads, AI tools, and priority processing.",
+                payWithRazorpay: "Pay with Razorpay/UPI",
+                cancel: "Cancel",
+                footerDesc: "Professional online tools for document and image processing. Built for Indian users.",
+                quickLinks: "Quick Links",
+                pricing: "Pricing",
+                support: "Support",
+                legal: "Legal",
+                privacy: "Privacy Policy",
+                terms: "Terms of Service",
+                refund: "Refund Policy",
+                paymentMethods: "Payment Methods",
+                allRightsReserved: "All rights reserved"
+            },
+            hi: {
+                home: "होम",
+                tools: "टूल्स",
+                dashboard: "डैशबोर्ड",
+                login: "लॉगिन",
+                register: "साइन अप",
+                logout: "लॉगआउट",
+                heroTitle: "50+ प्रोफेशनल टूल्स",
+                heroSubtitle: "भारत के लिए बनाया गया",
+                heroDescription: "हमारे शक्तिशाली ऑनलाइन टूल्स के साथ अपने दस्तावेज़ और छवियों को परिवर्तित, संपादित और प्रोसेस करें। कोई सॉफ़्टवेयर इंस्टॉलेशन की आवश्यकता नहीं।",
+                popularTools: "लोकप्रिय टूल्स",
+                whyChoose: "ToolHub.in क्यों चुनें?",
+                whyChooseDesc: "स्थानीय भाषा समर्थन और भुगतान विधियों के साथ विशेष रूप से भारतीय उपयोगकर्ताओं के लिए बनाया गया",
+                fastSecure: "तेज़ और सुरक्षित",
+                fastSecureDesc: "अधिकतम सुरक्षा के लिए सभी प्रोसेसिंग आपके ब्राउज़र में स्थानीय रूप से होती है",
+                indianPayments: "भारतीय भुगतान",
+                indianPaymentsDesc: "UPI, Razorpay, और अन्य स्थानीय भुगतान विधियां समर्थित",
+                hindiSupport: "हिंदी समर्थन",
+                hindiSupportDesc: "पूरा इंटरफेस हिंदी भाषा में उपलब्ध",
+                allTools: "सभी टूल्स",
+                allCategories: "सभी",
+                image: "छवि",
+                document: "दस्तावेज़",
+                backToTools: "टूल्स पर वापस",
+                dragDrop: "अपनी फ़ाइल यहाँ खींचें और छोड़ें",
+                orClick: "या ब्राउज़ करने के लिए क्लिक करें",
+                aiPowered: "OpenAI GPT द्वारा संचालित",
+                generate: "जेनरेट करें",
+                processing: "आपकी फ़ाइल प्रोसेस हो रही है...",
+                preview: "पूर्वावलोकन",
+                ready: "आपकी फ़ाइल तैयार है!",
+                downloadBelow: "नीचे अपनी प्रोसेसिंग की गई फ़ाइल डाउनलोड करें",
+                download: "डाउनलोड",
+                downloadZip: "ZIP डाउनलोड (प्रीमियम)",
+                signInAccount: "अपने खाते में साइन इन करें",
+                signIn: "साइन इन",
+                dontHaveAccount: "खाता नहीं है?",
+                signUpHere: "यहाँ साइन अप करें",
+                createAccount: "अपना खाता बनाएं",
+                signUp: "साइन अप",
+                alreadyHaveAccount: "पहले से खाता है?",
+                signInHere: "यहाँ साइन इन करें",
+                quickActions: "त्वरित कार्य",
+                browseTools: "टूल्स ब्राउज़ करें",
+                upgradePremium: "प्रीमियम में अपग्रेड करें",
+                toolsUsed: "उपयोग किए गए टूल्स",
+                filesProcessed: "प्रोसेसिंग की गई फ़ाइलें",
+                membershipStatus: "सदस्यता",
+                free: "मुफ़्त",
+                recentActivity: "हाल की गतिविधि",
+                noRecentActivity: "कोई हाल की गतिविधि नहीं। अपना इतिहास देखने के लिए टूल्स का उपयोग शुरू करें।",
+                premiumFeatures: "ZIP डाउनलोड, AI टूल्स, और प्राथमिकता प्रोसेसिंग सहित प्रीमियम सुविधाओं को अनलॉक करें।",
+                payWithRazorpay: "Razorpay/UPI से भुगतान करें",
+                cancel: "रद्द करें",
+                footerDesc: "दस्तावेज़ और छवि प्रोसेसिंग के लिए पेशेवर ऑनलाइन टूल्स। भारतीय उपयोगकर्ताओं के लिए बनाया गया।",
+                quickLinks: "त्वरित लिंक",
+                pricing: "मूल्य निर्धारण",
+                support: "सहायता",
+                legal: "कानूनी",
+                privacy: "गोपनीयता नीति",
+                terms: "सेवा की शर्तें",
+                refund: "रिफंड नीति",
+                paymentMethods: "भुगतान के तरीके",
+                allRightsReserved: "सर्वाधिकार सुरक्षित"
+            }
+        };
+
+        // Tools Data
+        const tools = [
+            // PDF Tools
+            { id: 'pdf-to-word', name: 'PDF to Word', icon: '📄', category: 'pdf', description: 'Convert PDF files to editable Word documents', premium: false },
+            { id: 'word-to-pdf', name: 'Word to PDF', icon: '📝', category: 'pdf', description: 'Convert Word documents to PDF format', premium: false },
+            { id: 'pdf-merge', name: 'PDF Merge', icon: '🔗', category: 'pdf', description: 'Combine multiple PDF files into one', premium: true },
+            { id: 'pdf-split', name: 'PDF Split', icon: '✂️', category: 'pdf', description: 'Split PDF into separate pages or ranges', premium: false },
+            { id: 'pdf-compress', name: 'PDF Compress', icon: '🗜️', category: 'pdf', description: 'Reduce PDF file size without quality loss', premium: false },
+            { id: 'pdf-rotate', name: 'PDF Rotate', icon: '🔄', category: 'pdf', description: 'Rotate PDF pages to correct orientation', premium: false },
+            { id: 'pdf-watermark', name: 'PDF Watermark', icon: '💧', category: 'pdf', description: 'Add watermark to PDF documents', premium: true },
+            { id: 'pdf-password', name: 'PDF Password', icon: '🔒', category: 'pdf', description: 'Add or remove password protection from PDF', premium: true },
+            { id: 'pdf-to-excel', name: 'PDF to Excel', icon: '📊', category: 'pdf', description: 'Convert PDF tables to Excel spreadsheets', premium: true },
+            { id: 'excel-to-pdf', name: 'Excel to PDF', icon: '📈', category: 'pdf', description: 'Convert Excel files to PDF format', premium: false },
+            { id: 'pdf-to-ppt', name: 'PDF to PowerPoint', icon: '📽️', category: 'pdf', description: 'Convert PDF to PowerPoint presentation', premium: true },
+            { id: 'ppt-to-pdf', name: 'PowerPoint to PDF', icon: '🎯', category: 'pdf', description: 'Convert PowerPoint to PDF format', premium: false },
+
+            // Image Tools
+            { id: 'jpg-to-pdf', name: 'JPG to PDF', icon: '🖼️', category: 'image', description: 'Convert JPG images to PDF documents', premium: false },
+            { id: 'png-to-jpg', name: 'PNG to JPG', icon: '🎨', category: 'image', description: 'Convert PNG images to JPG format', premium: false },
+            { id: 'jpg-to-png', name: 'JPG to PNG', icon: '🌈', category: 'image', description: 'Convert JPG images to PNG format', premium: false },
+            { id: 'webp-to-jpg', name: 'WebP to JPG', icon: '🌐', category: 'image', description: 'Convert WebP images to JPG format', premium: false },
+            { id: 'jpg-to-webp', name: 'JPG to WebP', icon: '⚡', category: 'image', description: 'Convert JPG images to WebP format', premium: false },
+            { id: 'image-resize', name: 'Image Resize', icon: '📏', category: 'image', description: 'Resize images to specific dimensions', premium: false },
+            { id: 'image-compress', name: 'Image Compress', icon: '🗜️', category: 'image', description: 'Reduce image file size while maintaining quality', premium: false },
+            { id: 'image-crop', name: 'Image Crop', icon: '✂️', category: 'image', description: 'Crop images to specific areas', premium: false },
+            { id: 'image-rotate', name: 'Image Rotate', icon: '🔄', category: 'image', description: 'Rotate images to correct orientation', premium: false },
+            { id: 'background-remover', name: 'Background Remover', icon: '🎭', category: 'image', description: 'Remove background from images automatically', premium: true },
+            { id: 'image-watermark', name: 'Image Watermark', icon: '💧', category: 'image', description: 'Add watermark to images', premium: true },
+            { id: 'photo-editor', name: 'Photo Editor', icon: '🎨', category: 'image', description: 'Advanced photo editing tools', premium: true },
+            { id: 'gif-maker', name: 'GIF Maker', icon: '🎬', category: 'image', description: 'Create animated GIFs from images or videos', premium: true },
+            { id: 'ico-converter', name: 'ICO Converter', icon: '🔷', category: 'image', description: 'Convert images to ICO format for icons', premium: false },
+
+            // Document Tools
+            { id: 'text-to-pdf', name: 'Text to PDF', icon: '📃', category: 'document', description: 'Convert plain text to PDF documents', premium: false },
+            { id: 'html-to-pdf', name: 'HTML to PDF', icon: '🌐', category: 'document', description: 'Convert HTML pages to PDF documents', premium: false },
+            { id: 'csv-to-excel', name: 'CSV to Excel', icon: '📊', category: 'document', description: 'Convert CSV files to Excel format', premium: false },
+            { id: 'excel-to-csv', name: 'Excel to CSV', icon: '📈', category: 'document', description: 'Convert Excel files to CSV format', premium: false },
+            { id: 'qr-generator', name: 'QR Code Generator', icon: '📱', category: 'document', description: 'Generate QR codes for text, URLs, and more', premium: false },
+            { id: 'barcode-generator', name: 'Barcode Generator', icon: '〰️', category: 'document', description: 'Generate various types of barcodes', premium: false },
+            { id: 'signature-maker', name: 'Digital Signature', icon: '✍️', category: 'document', description: 'Create digital signatures for documents', premium: true },
+            { id: 'invoice-generator', name: 'Invoice Generator', icon: '🧾', category: 'document', description: 'Create professional invoices', premium: true },
+            { id: 'resume-builder', name: 'Resume Builder', icon: '📋', category: 'document', description: 'Build professional resumes with templates', premium: true },
+            { id: 'letter-generator', name: 'Letter Generator', icon: '💌', category: 'document', description: 'Generate formal letters and applications', premium: true },
+
+            // AI Tools
+            { id: 'ai-essay-generator', name: 'AI Essay Generator', icon: '🤖', category: 'ai', description: 'Generate essays and articles using AI', premium: true },
+            { id: 'ai-question-maker', name: 'AI Question Maker', icon: '❓', category: 'ai', description: 'Create questions for UPSC, SSC, and other exams', premium: true },
+            { id: 'ai-resume-assistant', name: 'AI Resume Assistant', icon: '🎯', category: 'ai', description: 'AI-powered resume optimization and suggestions', premium: true },
+            { id: 'ai-grammar-check', name: 'AI Grammar Check', icon: '✅', category: 'ai', description: 'Check and correct grammar using AI', premium: true },
+            { id: 'ai-translator', name: 'AI Translator', icon: '🌍', category: 'ai', description: 'Translate text between multiple languages', premium: true },
+            { id: 'ai-summarizer', name: 'AI Summarizer', icon: '📝', category: 'ai', description: 'Summarize long documents and articles', premium: true },
+            { id: 'ai-paraphraser', name: 'AI Paraphraser', icon: '🔄', category: 'ai', description: 'Rewrite text while maintaining meaning', premium: true },
+            { id: 'ai-content-writer', name: 'AI Content Writer', icon: '✍️', category: 'ai', description: 'Generate various types of content using AI', premium: true },
+
+            // Utility Tools
+            { id: 'url-shortener', name: 'URL Shortener', icon: '🔗', category: 'utility', description: 'Shorten long URLs for easy sharing', premium: false },
+            { id: 'password-generator', name: 'Password Generator', icon: '🔐', category: 'utility', description: 'Generate secure passwords', premium: false },
+            { id: 'hash-generator', name: 'Hash Generator', icon: '🔢', category: 'utility', description: 'Generate MD5, SHA1, SHA256 hashes', premium: false },
+            { id: 'base64-encoder', name: 'Base64 Encoder', icon: '🔤', category: 'utility', description: 'Encode and decode Base64 strings', premium: false },
+            { id: 'json-formatter', name: 'JSON Formatter', icon: '📄', category: 'utility', description: 'Format and validate JSON data', premium: false },
+            { id: 'xml-formatter', name: 'XML Formatter', icon: '📋', category: 'utility', description: 'Format and validate XML data', premium: false },
+            { id: 'color-picker', name: 'Color Picker', icon: '🎨', category: 'utility', description: 'Pick colors and get hex, RGB values', premium: false },
+            { id: 'unit-converter', name: 'Unit Converter', icon: '⚖️', category: 'utility', description: 'Convert between different units', premium: false }
+        ];
+
+        let currentUser = null;
+        let currentLanguage = localStorage.getItem('language') || 'en';
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        let currentTool = null;
+        let processedFile = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Set initial theme
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+            }
+
+            // Set initial language
+            document.getElementById('langToggle').textContent = currentLanguage.toUpperCase();
+            updateLanguage();
+
+            // Generate tools grid
+            generateToolsGrid();
+
+            // Check authentication state
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    showUserInfo();
+                } else {
+                    currentUser = null;
+                    showAuthButtons();
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            // Show selected page
+            const targetPage = document.getElementById(pageId + 'Page');
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // Update navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // Handle special cases
+            if (pageId === 'tools') {
+                generateAllToolsGrid();
+            }
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function showTool(toolId) {
+            const tool = tools.find(t => t.id === toolId);
+            if (!tool) return;
+
+            currentTool = tool;
+
+            // Update tool page content
+            document.getElementById('toolIcon').textContent = tool.icon;
+            document.getElementById('toolTitle').textContent = tool.name;
+            document.getElementById('toolDescription').textContent = tool.description;
+
+            // Show/hide premium badge
+            const premiumBadge = document.getElementById('premiumBadge');
+            if (tool.premium) {
+                premiumBadge.style.display = 'block';
+            } else {
+                premiumBadge.style.display = 'none';
+            }
+
+            // Configure tool interface based on category
+            if (tool.category === 'ai') {
+                document.getElementById('fileUploadSection').style.display = 'none';
+                document.getElementById('aiInputSection').style.display = 'block';
+            } else {
+                document.getElementById('fileUploadSection').style.display = 'block';
+                document.getElementById('aiInputSection').style.display = 'none';
+            }
+
+            // Reset tool state
+            resetToolState();
+
+            // Show tool page
+            showPage('tool');
+        }
+
+        function resetToolState() {
+            document.getElementById('processingStatus').classList.add('hidden');
+            document.getElementById('previewSection').classList.add('hidden');
+            document.getElementById('downloadSection').classList.add('hidden');
+            document.getElementById('fileInput').value = '';
+            document.getElementById('aiPrompt').value = '';
+            processedFile = null;
+        }
+
+        function generateToolsGrid() {
+            const grid = document.getElementById('toolsGrid');
+            const popularTools = tools.slice(0, 8); // Show first 8 tools as popular
+
+            grid.innerHTML = popularTools.map(tool => `
+                <div class="tool-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 relative" onclick="checkAuthAndShowTool('${tool.id}')">
+                    ${tool.premium ? '<div class="premium-badge"><i class="fas fa-crown mr-1"></i>Premium</div>' : ''}
+                    <div class="text-4xl mb-4">${tool.icon}</div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">${tool.name}</h3>
+                    <p class="text-sm text-gray-600">${tool.description}</p>
+                    <div class="mt-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ${tool.category.toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function generateAllToolsGrid() {
+            const grid = document.getElementById('allToolsGrid');
+            grid.innerHTML = tools.map(tool => `
+                <div class="tool-card bg-white rounded-lg shadow-sm p-6 border border-gray-200 relative" onclick="checkAuthAndShowTool('${tool.id}')" data-category="${tool.category}">
+                    ${tool.premium ? '<div class="premium-badge"><i class="fas fa-crown mr-1"></i>Premium</div>' : ''}
+                    <div class="text-4xl mb-4">${tool.icon}</div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">${tool.name}</h3>
+                    <p class="text-sm text-gray-600">${tool.description}</p>
+                    <div class="mt-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ${tool.category.toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function checkAuthAndShowTool(toolId) {
+            if (!currentUser) {
+                alert(languages[currentLanguage].login + ' required to use tools');
+                showPage('login');
+                return;
+            }
+            showTool(toolId);
+        }
+
+        function filterTools() {
+            const searchTerm = document.getElementById('toolSearch').value.toLowerCase();
+            const toolCards = document.querySelectorAll('.tool-card');
+
+            toolCards.forEach(card => {
+                const toolName = card.querySelector('h3').textContent.toLowerCase();
+                const toolDesc = card.querySelector('p').textContent.toLowerCase();
+                
+                if (toolName.includes(searchTerm) || toolDesc.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function filterByCategory(category) {
+            const toolCards = document.querySelectorAll('#allToolsGrid .tool-card');
+            const categoryBtns = document.querySelectorAll('.category-btn');
+
+            // Update active button
+            categoryBtns.forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            event.target.classList.add('active', 'bg-blue-600', 'text-white');
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+
+            // Filter tools
+            toolCards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // File handling functions
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+        }
+
+        function dropHandler(ev) {
+            ev.preventDefault();
+            const files = ev.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (!currentTool) return;
+
+            // Show processing status
+            document.getElementById('processingStatus').classList.remove('hidden');
+
+            // Simulate file processing
+            setTimeout(() => {
+                processFile(file);
+            }, 2000);
+        }
+
+        function processFile(file) {
+            // Hide processing status
+            document.getElementById('processingStatus').classList.add('hidden');
+
+            // Show preview
+            const previewContent = document.getElementById('previewContent');
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewContent.innerHTML = `<img src="${e.target.result}" class="max-w-full h-auto rounded-lg" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-file-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">${file.name}</p>
+                        <p class="text-sm text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('previewSection').classList.remove('hidden');
+
+            // Simulate processing result
+            processedFile = {
+                name: `processed_${file.name}`,
+                blob: file, // In reality, this would be the processed file
+                originalName: file.name
+            };
+
+            // Show download section
+            document.getElementById('downloadSection').classList.remove('hidden');
+
+            // Show premium download button for premium tools
+            if (currentTool.premium) {
+                document.getElementById('premiumDownloadBtn').style.display = 'inline-block';
+            }
+
+            // Update user stats
+            updateUserStats();
+        }
+
+        async function processAITool() {
+            const prompt = document.getElementById('aiPrompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt');
+                return;
+            }
+
+            if (!currentTool || currentTool.category !== 'ai') return;
+
+            // Check if user has premium access for AI tools
+            if (!isPremiumUser()) {
+                showPremiumModal();
+                return;
+            }
+
+            // Show processing status
+            document.getElementById('processingStatus').classList.remove('hidden');
+
+            try {
+                // Simulate OpenAI API call
+                const result = await simulateOpenAICall(prompt, currentTool.id);
+                
+                // Hide processing status
+                document.getElementById('processingStatus').classList.add('hidden');
+
+                // Show result
+                const previewContent = document.getElementById('previewContent');
+                previewContent.innerHTML = `
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h4 class="font-medium text-gray-900 mb-2">AI Generated Content:</h4>
+                        <div class="text-gray-700 whitespace-pre-wrap">${result}</div>
+                    </div>
+                `;
+
+                document.getElementById('previewSection').classList.remove('hidden');
+
+                // Create downloadable content
+                processedFile = {
+                    name: `ai_generated_${currentTool.id}.txt`,
+                    blob: new Blob([result], { type: 'text/plain' }),
+                    originalName: `AI_${currentTool.name}`
+                };
+
+                document.getElementById('downloadSection').classList.remove('hidden');
+                updateUserStats();
+
+            } catch (error) {
+                document.getElementById('processingStatus').classList.add('hidden');
+                alert('Error processing AI request. Please try again.');
+            }
+        }
+
+        async function simulateOpenAICall(prompt, toolId) {
+            // Simulate OpenAI API call with different responses based on tool
+            const responses = {
+                'ai-essay-generator': `# Essay on "${prompt}"\n\nIntroduction:\nThis essay explores the topic of ${prompt}, examining its various aspects and implications.\n\nMain Body:\n1. Definition and Background\n2. Key Arguments and Evidence\n3. Analysis and Discussion\n\nConclusion:\nIn conclusion, ${prompt} represents an important area of study that requires continued attention and research.`,
+                
+                'ai-question-maker': `# Questions on "${prompt}"\n\n1. What are the main characteristics of ${prompt}?\n2. How does ${prompt} impact society?\n3. Explain the significance of ${prompt} in modern context.\n4. Compare and contrast different aspects of ${prompt}.\n5. What are the future implications of ${prompt}?`,
+                
+                'ai-resume-assistant': `# Resume Suggestions for "${prompt}"\n\n## Skills to Highlight:\n- Technical expertise in ${prompt}\n- Problem-solving abilities\n- Communication skills\n\n## Experience Format:\n• Quantify achievements with numbers\n• Use action verbs\n• Focus on results and impact\n\n## Additional Recommendations:\n- Customize for each application\n- Include relevant keywords\n- Keep it concise and professional`,
+                
+                'ai-grammar-check': `# Grammar Check Results\n\nOriginal: ${prompt}\n\nCorrected Version:\n[Simulated grammar corrections would appear here]\n\nSuggestions:\n• Check subject-verb agreement\n• Review punctuation usage\n• Consider sentence structure`,
+                
+                'default': `# AI Generated Content\n\nBased on your input: "${prompt}"\n\nThis is a simulated AI response. In a real implementation, this would connect to OpenAI's API to generate appropriate content based on the specific tool and user input.`
+            };
+
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            return responses[toolId] || responses['default'];
+        }
+
+        function downloadFile() {
+            if (!processedFile) return;
+
+            const url = URL.createObjectURL(processedFile.blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = processedFile.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function updateUserStats() {
+            const currentStats = JSON.parse(localStorage.getItem('userStats') || '{"toolsUsed": 0, "filesProcessed": 0}');
+            currentStats.toolsUsed += 1;
+            currentStats.filesProcessed += 1;
+            localStorage.setItem('userStats', JSON.stringify(currentStats));
+
+            // Update dashboard if visible
+            document.getElementById('toolsUsedCount').textContent = currentStats.toolsUsed;
+            document.getElementById('filesProcessedCount').textContent = currentStats.filesProcessed;
+
+            // Add to recent activity
+            addRecentActivity(`Used ${currentTool.name} tool`);
+        }
+
+        function addRecentActivity(activity) {
+            const recentActivity = JSON.parse(localStorage.getItem('recentActivity') || '[]');
+            recentActivity.unshift({
+                activity: activity,
+                timestamp: new Date().toLocaleString()
+            });
+            
+            // Keep only last 10 activities
+            if (recentActivity.length > 10) {
+                recentActivity.pop();
+            }
+            
+            localStorage.setItem('recentActivity', JSON.stringify(recentActivity));
+            updateRecentActivityDisplay();
+        }
+
+        function updateRecentActivityDisplay() {
+            const recentActivity = JSON.parse(localStorage.getItem('recentActivity') || '[]');
+            const container = document.getElementById('recentActivity');
+            
+            if (recentActivity.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center py-3 px-4 bg-gray-50 rounded-lg">
+                        <i class="fas fa-info-circle text-gray-400 mr-3"></i>
+                        <span class="text-gray-600" data-lang="noRecentActivity">No recent activity. Start using tools to see your history here.</span>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = recentActivity.map(item => `
+                    <div class="flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg">
+                        <span class="text-gray-700">${item.activity}</span>
+                        <span class="text-xs text-gray-500">${item.timestamp}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Authentication functions
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showPage('dashboard');
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                showPage('dashboard');
+            } catch (error) {
+                alert('Registration failed: ' + error.message);
+            }
+        }
+
+        async function logout() {
+            try {
+                await auth.signOut();
+                showPage('home');
+            } catch (error) {
+                alert('Logout failed: ' + error.message);
+            }
+        }
+
+        function showUserInfo() {
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('userInfo').style.display = 'block';
+            document.getElementById('userEmail').textContent = currentUser.email;
+
+            // Load user stats
+            const stats = JSON.parse(localStorage.getItem('userStats') || '{"toolsUsed": 0, "filesProcessed": 0}');
+            document.getElementById('toolsUsedCount').textContent = stats.toolsUsed;
+            document.getElementById('filesProcessedCount').textContent = stats.filesProcessed;
+            
+            updateRecentActivityDisplay();
+        }
+
+        function showAuthButtons() {
+            document.getElementById('authButtons').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'none';
+        }
+
+        // Premium and payment functions
+        function showPremiumModal() {
+            document.getElementById('premiumModal').style.display = 'block';
+        }
+
+        function closePremiumModal() {
+            document.getElementById('premiumModal').style.display = 'none';
+        }
+
+        function initiatePremiumPayment() {
+            const options = {
+                key: 'rzp_test_1234567890', // Replace with your Razorpay key
+                amount: 9900, // Amount in paise (₹99)
+                currency: 'INR',
+                name: 'ToolHub.in',
+                description: 'Premium Membership',
+                image: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iOCIgZmlsbD0iIzM2ODJGNiIvPgo8dGV4dCB4PSIyMCIgeT0iMjYiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iI0ZGRkZGRiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+XoO+4jzwvdGV4dD4KPHN2Zz4=',
+                handler: function (response) {
+                    // Payment successful
+                    alert('Payment successful! Premium features unlocked.');
+                    localStorage.setItem('isPremium', 'true');
+                    document.getElementById('membershipStatus').textContent = 'Premium';
+                    closePremiumModal();
+                },
+                prefill: {
+                    email: currentUser ? currentUser.email : '',
+                },
+                theme: {
+                    color: '#3B82F6'
+                },
+                method: {
+                    upi: true,
+                    card: true,
+                    netbanking: true,
+                    wallet: true
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.open();
+        }
+
+        function isPremiumUser() {
+            return localStorage.getItem('isPremium') === 'true';
+        }
+
+        // Theme and language functions
+        function toggleTheme() {
+            if (currentTheme === 'light') {
+                currentTheme = 'dark';
+                document.body.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+            } else {
+                currentTheme = 'light';
+                document.body.classList.remove('dark');
+                document.getElementById('themeIcon').className = 'fas fa-moon';
+            }
+            localStorage.setItem('theme', currentTheme);
+        }
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'hi' : 'en';
+            localStorage.setItem('language', currentLanguage);
+            document.getElementById('langToggle').textContent = currentLanguage.toUpperCase();
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (languages[currentLanguage] && languages[currentLanguage][key]) {
+                    element.textContent = languages[currentLanguage][key];
+                }
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('premiumModal');
+            if (event.target === modal) {
+                closePremiumModal();
+            }
+        }
+    </script>
+</body>
+</html>
